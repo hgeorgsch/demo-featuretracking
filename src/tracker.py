@@ -2,15 +2,22 @@
 
 NB: Untested, unfinished!"""
 
+import cv2 as cv
+
+def getGradient(img):
+    Ix = cv.Sobel(img1, ddepth=cv.CV_32F, dx=1, dy=0, ksize=5)
+    Iy = cv.Sobel(img1, ddepth=cv.CV_32F, dx=0, dy=1, ksize=5)
+    return (Ix,Iy)
+
+
 def getMotion(Ix, Iy, It, x):
     pass
 
-def optical_flow(I1g, I2g, img1, img2, pa):
-    cx_answer = cv.cornerHarris(I1g, 5, 5, 0.06)
-    cx_answer_2 = cv.cornerHarris(I2g, 5, 5, 0.06)
-    Ix = cv.Sobel(I1g, ddepth=cv.CV_32F, dx=1, dy=0, ksize=5)
-    Iy = cv.Sobel(I1g, ddepth=cv.CV_32F, dx=0, dy=1, ksize=5)
-    it = I2g - I1g
+def optical_flow(img1, img2, pa):
+    cx_answer = cv.cornerHarris(img1, 5, 5, 0.06)
+    cx_answer_2 = cv.cornerHarris(img2, 5, 5, 0.06)
+    (Ix,Iy) = getGradient(img)
+    It = img2 - img1
 
     ixix = Ix * Ix
     ixiy = Ix * Iy
