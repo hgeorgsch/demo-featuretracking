@@ -1,18 +1,22 @@
-"""Optical flow test-code.
+"""Demo of a feature tracker.
+
 NB: Untested, unfinished!"""
+
+def getMotion(Ix, Iy, It, x):
+    pass
 
 def optical_flow(I1g, I2g, img1, img2, pa):
     cx_answer = cv.cornerHarris(I1g, 5, 5, 0.06)
     cx_answer_2 = cv.cornerHarris(I2g, 5, 5, 0.06)
-    gX = cv.Sobel(I1g, ddepth=cv.CV_32F, dx=1, dy=0, ksize=5)
-    gY = cv.Sobel(I1g, ddepth=cv.CV_32F, dx=0, dy=1, ksize=5)
+    Ix = cv.Sobel(I1g, ddepth=cv.CV_32F, dx=1, dy=0, ksize=5)
+    Iy = cv.Sobel(I1g, ddepth=cv.CV_32F, dx=0, dy=1, ksize=5)
     it = I2g - I1g
 
-    ixix = gX * gX
-    ixiy = gX * gY
-    iyiy = gY * gY
-    ixit = gX * it
-    iyit = gY * it
+    ixix = Ix * Ix
+    ixiy = Ix * Iy
+    iyiy = Iy * Iy
+    ixit = Ix * It
+    iyit = Iy * It
 
     sumf = np.array([[1, 1, 1, 1, 1],
                      [1, 1, 1, 1, 1],
@@ -44,4 +48,4 @@ def optical_flow(I1g, I2g, img1, img2, pa):
                 Gx = np.array([[a, b], [b, c]])
                 bx = np.array([[ixits[i][j]],
                                [iyits[i][j]]])
-                u = - np.linalg.inv(Gx) * bx
+                u = - np.linalg.inv(Gx) @ bx
