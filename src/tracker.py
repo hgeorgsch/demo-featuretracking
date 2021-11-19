@@ -11,26 +11,26 @@ def getGradient(img):
 
 
 def getMotion(Ix, Iy, It, x):
+    """Not used"""
     pass
 
-def optical_flow(img1, img2, pa):
+def optical_flow(img1, img2, numpts=5, debug=0):
     """
     Calculate motion/optical flow between two frames
 
         Parameters:
             img1 (numpy array): previous frame
             img2 (numpy array): current frame
-            pa (__): ??
+            numpts (int=5): number of feature points to track
+            debug (int=0): print debug information if >0
     """
 
-    # Step 1.  Feature points (Harris detector)
-    cx_answer = cv.cornerHarris(img2, 5, 5, 0.06)
 
-    # Step 2.  Spacial and temporal derivatives
+    # Step 1.  Spacial and temporal derivatives
     (Ix,Iy) = getGradient(img2)
     It = img2 - img1
 
-    # Step 3.  The G matrix
+    # Step 2.  Calculations for the G matrix
     # Auxiliaries
     ixix = Ix * Ix
     ixiy = Ix * Iy
@@ -52,14 +52,25 @@ def optical_flow(img1, img2, pa):
     ixits = signal.convolve2d(ixit, sumf, mode='full', boundary='symm')  
     iyits = signal.convolve2d(iyit, sumf, mode='full', boundary='symm')  
 
-    # Step 4.  Corners
-    # -G(x) - lb(x, t)
+    # Step 3.  Feature points (Harris detector)
+
     # Find corners
+    cx_answer = cv.cornerHarris(img2, 5, 5, 0.06)
+    if debug > 0:
+        print( "Return value from the Harris Detector:" )
+        print( cx_answer )
+
+
+    ## What happens here?
+    # We should sort the corners by strength and pick top five or whatever.
     min_cx = np.min(cx_answer)
     max_cx = np.max(cx_answer)
     T = min_cx + (max_cx - min_cx) * 50 / 100
     T = T * 3
+
+    # -G(x) - lb(x, t)
     
+    # Step 4.  Motion for each corner
     # Iterate over corners
     # TODO: This is only one pixel per corner, filter around corners?
     for i in range(cx_answer.shape[0]):
@@ -68,7 +79,7 @@ def optical_flow(img1, img2, pa):
                 a = ixs[i][j]
                 c = iys[i][j]
                 b = ixys[i][j]
-                Gx = np.array([[a, b], [b, c]])
-                bx = np.array([[ixits[i][j]],
+                Gmatrix = np.array([[a, b], [b, c]])
+                bvector = np.array([[ixits[i][j]],
                                [iyits[i][j]]])
-                u = - np.linalg.inv(Gx) @ bx
+                u = - np.linalg.inv(Gmatrix) @ bvector
