@@ -14,29 +14,45 @@ def getMotion(Ix, Iy, It, x):
     pass
 
 def optical_flow(img1, img2, pa):
-    cx_answer = cv.cornerHarris(img1, 5, 5, 0.06)
-    cx_answer_2 = cv.cornerHarris(img2, 5, 5, 0.06)
-    (Ix,Iy) = getGradient(img)
+    """
+    Calculate motion/optical flow between two frames
+
+        Parameters:
+            img1 (numpy array): previous frame
+            img2 (numpy array): current frame
+            pa (__): ??
+    """
+
+    # Step 1.  Feature points (Harris detector)
+    cx_answer = cv.cornerHarris(img2, 5, 5, 0.06)
+
+    # Step 2.  Spacial and temporal derivatives
+    (Ix,Iy) = getGradient(img2)
     It = img2 - img1
 
+    # Step 3.  The G matrix
+    # Auxiliaries
     ixix = Ix * Ix
     ixiy = Ix * Iy
     iyiy = Iy * Iy
     ixit = Ix * It
     iyit = Iy * It
 
+    # Window for summation
     sumf = np.array([[1, 1, 1, 1, 1],
                      [1, 1, 1, 1, 1],
                      [1, 1, 1, 1, 1],
                      [1, 1, 1, 1, 1],
                      [1, 1, 1, 1, 1]])
 
-    ixs = signal.convolve2d(ixix, sumf, mode='full', boundary='symm')  # / 25
-    ixys = signal.convolve2d(ixiy, sumf, mode='full', boundary='symm')  # / 25
-    iys = signal.convolve2d(iyiy, sumf, mode='full', boundary='symm')  # / 25
-    ixits = signal.convolve2d(ixit, sumf, mode='full', boundary='symm')  # / 25
-    iyits = signal.convolve2d(iyit, sumf, mode='full', boundary='symm')  # / 25
+    # Summation over the window
+    ixs = signal.convolve2d(ixix, sumf, mode='full', boundary='symm')  
+    ixys = signal.convolve2d(ixiy, sumf, mode='full', boundary='symm')  
+    iys = signal.convolve2d(iyiy, sumf, mode='full', boundary='symm')  
+    ixits = signal.convolve2d(ixit, sumf, mode='full', boundary='symm')  
+    iyits = signal.convolve2d(iyit, sumf, mode='full', boundary='symm')  
 
+    # Step 4.  Corners
     # -G(x) - lb(x, t)
     # Find corners
     min_cx = np.min(cx_answer)
