@@ -30,6 +30,7 @@ def tileSelect(tile,count=5,debug=0):
             count (int=5): number of feature points to return
             debug (int=0): print debug information if >0
     """
+    print( "Tile input ", tile )
     ((i,j),tile) = tile
     cornerlist = [ ((x+i,y+j),s) 
             for ((x,y),s) in np.ndenumerate(np.abs(tile)) ]
@@ -65,8 +66,8 @@ def getHarris(img,count=5,tiling=(10,10),debug=0):
     (Sx,Sy) = (int(np.ceil(Nx/Tx)),int(np.ceil(Ny/Ty)))
     ## Making the tiles.
     ## This functional style is more elegant than what we should expect at this level.
-    tiles = [ ((i,j),cx_answer[Sx*i:Sx*(i+1),Sy*j:Sy*(j+1)]) 
-              for i,j in np.ndindex(tiling) ]
+    tiles = [ ((Sx*i,Sy*j),cx_answer[Sx*i:Sx*(i+1),Sy*j:Sy*(j+1)]) 
+              for (i,j) in np.ndindex(tiling) ]
     cornerlist = []
     for tile in tiles:
         cornerlist.extend( tileSelect(tile,count=count,debug=debug) )
