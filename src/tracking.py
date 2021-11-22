@@ -18,7 +18,18 @@ def getMotion(Ix, Iy, It, x):
     """Not used"""
     pass
 
-def tileSelect(tile,count=5,debug=0):
+def filterPoints(cl,count=5,separation=9,debug=0):
+    rl = []
+    n = 0
+    for ((x,y),s) in cl:
+        sd = [ (x-x1)**2+(y-y1)**2 for ((x1,y1),s) in rl ]
+        if (len(sd) == 0) or (min(sd) > separation**2):
+            rl.extend([((x,y),s)])
+            n += 1
+        if n >= count: break
+    return rl
+
+def tileSelect(tile,count=5,separation=9,debug=0):
     """
     Return sorted feature points with score.
 
@@ -40,12 +51,12 @@ def tileSelect(tile,count=5,debug=0):
     cornerlist = [ ((x+i,y+j),s) 
             for ((x,y),s) in np.ndenumerate(np.abs(tile)) ]
     cornerlist.sort(key=lambda x : x[1], reverse=True )
-    cornerlist = cornerlist[:count]
-    if debug > 1:
+    cornerlist = filterPoints(cornerlist,count=count,separation=separation)
+    if debug > 2:
         print( "tileSelect returns ", cornerlist )
     return cornerlist
 
-def getHarris(img,count=5,tiling=(10,10),debug=0):
+def getHarris(img,count=5,separation=20,tiling=(10,10),debug=0):
     """
     Tiled corner detection.
 
@@ -77,10 +88,11 @@ def getHarris(img,count=5,tiling=(10,10),debug=0):
               for (i,j) in np.ndindex(tiling) ]
     cornerlist = []
     for tile in tiles:
-        cornerlist.extend( tileSelect(tile,count=count,debug=debug) )
+        cornerlist.extend( tileSelect(tile,separation=separation,count=count,debug=debug) )
     ## Sort and return.
     ## Sorting may not be important at this stage, but why not.
     cornerlist.sort(key=lambda x : x[1], reverse=True )
+    cornerlist = filterPoints(cornerlist,count=tiling[0]*tiling[1]*count,separation=separation)
     return cornerlist
 
     
@@ -140,5 +152,5 @@ def optical_flow(img1, img2, numpts=5, debug=0):
         bvector = np.array([[ixits[i][j]], [iyits[i][j]]])
         # -G(x) - lb(x, t)
         u = - np.linalg.inv(Gmatrix) @ bvector
-        motionlist.extend( ((i,j),s,u) )
-        if debug > 2: print ( "Motion ", u )
+        motionlist.extend( [ ((i,j),s,u) ] )
+        if debug > 2: print ( "Motion ", u.flatten() )
