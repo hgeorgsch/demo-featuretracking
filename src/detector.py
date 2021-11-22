@@ -14,8 +14,10 @@ grey = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
 print( "Loaded image.  Size ", grey.shape )
 
-cornerlist = getHarris(grey)
+cornerlist = getHarris(grey,debug=1)
 
 for (pos,s) in cornerlist:
-    cv.circle(img,pos,10,(0,0,255))
+    # print ( pos, grey.shape )
+    (y,x) = pos
+    cv.circle(img,(x,y),10,(0,0,255))
 cv.imwrite( "features.jpeg", img)

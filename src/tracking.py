@@ -65,6 +65,8 @@ def getHarris(img,count=5,tiling=(10,10),debug=0):
     (Nx,Ny) = cx_answer.shape
     (Tx,Ty) = tiling
     (Sx,Sy) = (int(np.ceil(Nx/Tx)),int(np.ceil(Ny/Ty)))
+    if debug > 0:
+        print( "Image size ", (Nx,Ny), ". Tile size ", (Sx,Sy) )
     ## Making the tiles.
     ## This functional style is more elegant than what we should expect at this level.
     tiles = [ ((Sx*i,Sy*j),cx_answer[Sx*i:Sx*(i+1),Sy*j:Sy*(j+1)]) 
