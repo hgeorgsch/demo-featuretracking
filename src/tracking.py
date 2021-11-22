@@ -6,7 +6,7 @@ import cv2 as cv
 import numpy as np
 from scipy import signal
 
-__all__ = [ "optical_flow" ]
+__all__ = [ "optical_flow", "getHarris" ]
 
 def getGradient(img):
     Ix = cv.Sobel(img, ddepth=cv.CV_32F, dx=1, dy=0, ksize=5)
@@ -18,6 +18,53 @@ def getMotion(Ix, Iy, It, x):
     """Not used"""
     pass
 
+def tileSelect(tile,count=5,debug=0):
+    """
+    Given an array of corner detection scores, sort and return the required number of corners.
+
+        Parameters:
+            tile (numpy array): array of corner detection scores
+            count (int=5): number of feature points to return
+            debug (int=0): print debug information if >0
+    """
+    cornerlist = [ (x,s) for (x,s) in np.ndenumerate(np.abs(tile)) ]
+    cornerlist.sort(key=lambda x : x[1] )
+    cornerlist = cornerlist[:count]
+    if debug > 1:
+        print( "tileSelect returns ", cornerlist )
+    return cornerlist
+
+def getHarris(img,count=5,tiling=(10,10),debug=0):
+    """
+    Tiled corner detection.
+
+    Run the Harris corner detector at identify the required
+    number of corners for each tile of the image.
+
+        Parameters:
+            img (numpy array): image
+            count (int=5): number of feature points per tile
+            tiling (int,int=(10,10)): number of tiles to use
+            debug (int=0): print debug information if >0
+    """
+    # Find corners
+    cx_answer = cv.cornerHarris(img, 5, 5, 0.06)
+    if debug > 0:
+        print( "Return value from the Harris Detector:" )
+        print( cx_answer )
+
+    # Tiling
+    (Nx,Ny) = cx_answer.shape
+    (Tx,Ty) = tiling
+    (Sx,Sy) = (int(np.ceil(Nx/Tx)),int(np.ceil(Ny/Ty)))
+    tiles = [ cx_answer[Sx*i:Sx*(i+1),Sy*j:Sy*(j+1)] for i,j in np.ndindex(tiling) ]
+    cornerlist = []
+    for tile in tiles: cornerlist.extend( tileSelect(tile,count=count,debug=debug) )
+    cornerlist.sort(key=lambda x : x[1] )
+    return cornerlist
+
+    # -G(x) - lb(x, t)
+    
 def optical_flow(img1, img2, numpts=5, debug=0):
     """
     Calculate motion/optical flow between two frames
@@ -57,33 +104,18 @@ def optical_flow(img1, img2, numpts=5, debug=0):
     iyits = signal.convolve2d(iyit, sumf, mode='full', boundary='symm')  
 
     # Step 3.  Feature points (Harris detector)
+    cornerlist = getHarris(img2,debug=debug)
 
-    # Find corners
-    cx_answer = cv.cornerHarris(img2, 5, 5, 0.06)
-    if debug > 0:
-        print( "Return value from the Harris Detector:" )
-        print( cx_answer )
-
-
-    ## What happens here?
-    # We should sort the corners by strength and pick top five or whatever.
-    min_cx = np.min(cx_answer)
-    max_cx = np.max(cx_answer)
-    T = min_cx + (max_cx - min_cx) * 50 / 100
-    T = T * 3
-
-    # -G(x) - lb(x, t)
-    
     # Step 4.  Motion for each corner
     # Iterate over corners
     # TODO: This is only one pixel per corner, filter around corners?
-    for i in range(cx_answer.shape[0]):
-        for j in range(cx_answer.shape[1]):
-            if cx_answer[i, j] > T:
-                a = ixs[i][j]
-                c = iys[i][j]
-                b = ixys[i][j]
-                Gmatrix = np.array([[a, b], [b, c]])
-                bvector = np.array([[ixits[i][j]],
-                               [iyits[i][j]]])
-                u = - np.linalg.inv(Gmatrix) @ bvector
+    motionlist = []
+    for ((i,j),s) in cornerlist:
+        print( (i,j), s )
+        a = ixs[i][j]
+        c = iys[i][j]
+        b = ixys[i][j]
+        Gmatrix = np.array([[a, b], [b, c]])
+        bvector = np.array([[ixits[i][j]], [iyits[i][j]]])
+        u = - np.linalg.inv(Gmatrix) @ bvector
+        motionlist.extend( ((i,j),s,u) )
