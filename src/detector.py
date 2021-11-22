@@ -12,6 +12,8 @@ from tracking import *
 img = cv.imread( "../data/frame28.jpeg")
 grey = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
+print( "Loaded image.  Size ", grey.shape )
+
 cornerlist = getHarris(grey)
 
 for (pos,s) in cornerlist:

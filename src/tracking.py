@@ -30,7 +30,8 @@ def tileSelect(tile,count=5,debug=0):
             count (int=5): number of feature points to return
             debug (int=0): print debug information if >0
     """
-    print( "Tile input ", tile )
+    if debug > 1:
+       print( "Tile input ", tile )
     ((i,j),tile) = tile
     cornerlist = [ ((x+i,y+j),s) 
             for ((x,y),s) in np.ndenumerate(np.abs(tile)) ]
@@ -123,7 +124,7 @@ def optical_flow(img1, img2, numpts=5, debug=0):
     # TODO: This is only one pixel per corner, filter around corners?
     motionlist = []
     for ((i,j),s) in cornerlist:
-        print( (i,j), s )
+        if debug > 2: print( (i,j), s )
         a = ixs[i][j]
         c = iys[i][j]
         b = ixys[i][j]
@@ -132,4 +133,4 @@ def optical_flow(img1, img2, numpts=5, debug=0):
         # -G(x) - lb(x, t)
         u = - np.linalg.inv(Gmatrix) @ bvector
         motionlist.extend( ((i,j),s,u) )
-        print ( "Motion ", u )
+        if debug > 0: print ( "Motion ", u )
