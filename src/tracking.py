@@ -54,16 +54,19 @@ def getHarris(img,count=5,tiling=(10,10),debug=0):
         print( cx_answer )
 
     # Tiling
+    ## Tile parameters
     (Nx,Ny) = cx_answer.shape
     (Tx,Ty) = tiling
     (Sx,Sy) = (int(np.ceil(Nx/Tx)),int(np.ceil(Ny/Ty)))
+    ## Making the tiles.
+    ## This functional style is more elegant than what we should expect at this level.
     tiles = [ cx_answer[Sx*i:Sx*(i+1),Sy*j:Sy*(j+1)] for i,j in np.ndindex(tiling) ]
     cornerlist = []
     for tile in tiles: cornerlist.extend( tileSelect(tile,count=count,debug=debug) )
+    ## Sort and return.  Sorting may not be important at this stage, but why not.
     cornerlist.sort(key=lambda x : x[1] )
     return cornerlist
 
-    # -G(x) - lb(x, t)
     
 def optical_flow(img1, img2, numpts=5, debug=0):
     """
@@ -117,6 +120,7 @@ def optical_flow(img1, img2, numpts=5, debug=0):
         b = ixys[i][j]
         Gmatrix = np.array([[a, b], [b, c]])
         bvector = np.array([[ixits[i][j]], [iyits[i][j]]])
+        # -G(x) - lb(x, t)
         u = - np.linalg.inv(Gmatrix) @ bvector
         motionlist.extend( ((i,j),s,u) )
         print ( "Motion ", u )
