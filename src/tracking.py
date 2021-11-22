@@ -119,3 +119,4 @@ def optical_flow(img1, img2, numpts=5, debug=0):
         bvector = np.array([[ixits[i][j]], [iyits[i][j]]])
         u = - np.linalg.inv(Gmatrix) @ bvector
         motionlist.extend( ((i,j),s,u) )
+        print ( "Motion ", u )
