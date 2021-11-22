@@ -141,4 +141,4 @@ def optical_flow(img1, img2, numpts=5, debug=0):
         # -G(x) - lb(x, t)
         u = - np.linalg.inv(Gmatrix) @ bvector
         motionlist.extend( ((i,j),s,u) )
-        if debug > 3: print ( "Motion ", u )
+        if debug > 2: print ( "Motion ", u )
