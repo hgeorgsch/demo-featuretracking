@@ -30,12 +30,16 @@ def tileSelect(tile,count=5,debug=0):
             count (int=5): number of feature points to return
             debug (int=0): print debug information if >0
     """
-    if debug > 1:
-       print( "Tile input ", tile )
     ((i,j),tile) = tile
+
+    if debug > 2:
+       print( "Tile input ", tile )
+    if debug > 0:
+       print( "Tile Harris Score Range ", max(tile.flatten()), min(tile.flatten()) )
+
     cornerlist = [ ((x+i,y+j),s) 
             for ((x,y),s) in np.ndenumerate(np.abs(tile)) ]
-    cornerlist.sort(key=lambda x : x[1] )
+    cornerlist.sort(key=lambda x : x[1], reverse=True )
     cornerlist = cornerlist[:count]
     if debug > 1:
         print( "tileSelect returns ", cornerlist )
@@ -76,7 +80,7 @@ def getHarris(img,count=5,tiling=(10,10),debug=0):
         cornerlist.extend( tileSelect(tile,count=count,debug=debug) )
     ## Sort and return.
     ## Sorting may not be important at this stage, but why not.
-    cornerlist.sort(key=lambda x : x[1] )
+    cornerlist.sort(key=lambda x : x[1], reverse=True )
     return cornerlist
 
     
@@ -112,11 +116,12 @@ def optical_flow(img1, img2, numpts=5, debug=0):
                      [1, 1, 1, 1, 1]])
 
     # Summation over the window
-    ixs = signal.convolve2d(ixix, sumf, mode='full', boundary='symm')  
-    ixys = signal.convolve2d(ixiy, sumf, mode='full', boundary='symm')  
-    iys = signal.convolve2d(iyiy, sumf, mode='full', boundary='symm')  
-    ixits = signal.convolve2d(ixit, sumf, mode='full', boundary='symm')  
-    iyits = signal.convolve2d(iyit, sumf, mode='full', boundary='symm')  
+    convolutionmode = "same"
+    ixs = signal.convolve2d(ixix, sumf, mode=convolutionmode, boundary='symm')  
+    ixys = signal.convolve2d(ixiy, sumf, mode=convolutionmode, boundary='symm')  
+    iys = signal.convolve2d(iyiy, sumf, mode=convolutionmode, boundary='symm')  
+    ixits = signal.convolve2d(ixit, sumf, mode=convolutionmode, boundary='symm')  
+    iyits = signal.convolve2d(iyit, sumf, mode=convolutionmode, boundary='symm')  
 
     # Step 3.  Feature points (Harris detector)
     cornerlist = getHarris(img2,debug=debug)
@@ -126,7 +131,8 @@ def optical_flow(img1, img2, numpts=5, debug=0):
     # TODO: This is only one pixel per corner, filter around corners?
     motionlist = []
     for ((i,j),s) in cornerlist:
-        if debug > 2: print( (i,j), s )
+        if debug > 2:
+            print( (i,j), s, ". ixs shape ", ixs.shape, ". Image shape ", img2.shape )
         a = ixs[i][j]
         c = iys[i][j]
         b = ixys[i][j]
@@ -135,4 +141,4 @@ def optical_flow(img1, img2, numpts=5, debug=0):
         # -G(x) - lb(x, t)
         u = - np.linalg.inv(Gmatrix) @ bvector
         motionlist.extend( ((i,j),s,u) )
-        if debug > 0: print ( "Motion ", u )
+        if debug > 3: print ( "Motion ", u )
