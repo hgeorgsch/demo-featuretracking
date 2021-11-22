@@ -13,3 +13,4 @@ img2 = cv.cvtColor(img2, cv.COLOR_BGR2GRAY)
 
 ml = getMotion(img1, img2, numpts=5, debug=3)
 img = drawMotionList( img2, ml )
+cv.imwrite( "motions.jpeg", img)
