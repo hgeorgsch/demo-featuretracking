@@ -8,7 +8,7 @@ import cv2 as cv
 import numpy as np
 from scipy import signal
 
-__all__ = [ "optical_flow", "getHarris" ]
+__all__ = [ "getMotion", "getHarris", "drawMotionList" ]
 
 def getGradient(img):
     Ix = cv.Sobel(img, ddepth=cv.CV_32F, dx=1, dy=0, ksize=5)
@@ -101,7 +101,7 @@ def getHarris(img,count=5,separation=20,tiling=(10,10),debug=0):
     return cornerlist
 
     
-def optical_flow(img1, img2, numpts=5, debug=0):
+def getMotion(img1, img2, numpts=5, debug=0):
     """
     Calculate motion/optical flow between two frames
 
@@ -159,3 +159,18 @@ def optical_flow(img1, img2, numpts=5, debug=0):
         u = - np.linalg.inv(Gmatrix) @ bvector
         motionlist.extend( [ ((i,j),s,u) ] )
         if debug > 2: print ( "Motion ", u.flatten() )
+     return motionlist
+
+def drawMotion(img,pt,u,scale=2):
+    """Draw a motion vector u from a given point pt."""
+    (x,y) = pt
+    u = u.flatten()
+    (x1,y1) = (x+scale*u[0],y+scale*u[1])
+    return cv.arrowedLine(img, pt, (x1,y1), (255,0,0), 1)
+
+def drawMotionList(img,motionlist):
+    """Draw motion vectors as returned from getMotion()."""
+    image = img
+    for (pt,s,u) in motionlist: 
+        image = drawMotion(image,pt,u)
+    return image
