@@ -1,6 +1,8 @@
 """Basic routines for corner detection and tracking.
 
-NB: Untested, unfinished!"""
+The getHarris() function and its auxiliaries seem to work.
+The tracker remains to be tested.
+"""
 
 import cv2 as cv
 import numpy as np
@@ -19,6 +21,10 @@ def getMotion(Ix, Iy, It, x):
     pass
 
 def filterPoints(cl,count=5,separation=9,debug=0):
+    """
+    Filter a list of scored Harris corners to enforce a given
+    separation and limit the number of points.
+    """
     rl = []
     n = 0
     for ((x,y),s) in cl:
@@ -83,14 +89,13 @@ def getHarris(img,count=5,separation=20,tiling=(10,10),debug=0):
     if debug > 0:
         print( "Image size ", (Nx,Ny), ". Tile size ", (Sx,Sy) )
     ## Making the tiles.
-    ## This functional style is more elegant than what we should expect at this level.
     tiles = [ ((Sx*i,Sy*j),cx_answer[Sx*i:Sx*(i+1),Sy*j:Sy*(j+1)]) 
               for (i,j) in np.ndindex(tiling) ]
     cornerlist = []
     for tile in tiles:
         cornerlist.extend( tileSelect(tile,separation=separation,count=count,debug=debug) )
-    ## Sort and return.
-    ## Sorting may not be important at this stage, but why not.
+    ## We need to sort and filter to avoid clusters of
+    ## feature points along tile boundaries.
     cornerlist.sort(key=lambda x : x[1], reverse=True )
     cornerlist = filterPoints(cornerlist,count=tiling[0]*tiling[1]*count,separation=separation)
     return cornerlist
