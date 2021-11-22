@@ -3,12 +3,14 @@
 NB: Untested, unfinished!"""
 
 import cv2 as cv
+import numpy as np
+from scipy import signal
 
 __all__ = [ "optical_flow" ]
 
 def getGradient(img):
-    Ix = cv.Sobel(img1, ddepth=cv.CV_32F, dx=1, dy=0, ksize=5)
-    Iy = cv.Sobel(img1, ddepth=cv.CV_32F, dx=0, dy=1, ksize=5)
+    Ix = cv.Sobel(img, ddepth=cv.CV_32F, dx=1, dy=0, ksize=5)
+    Iy = cv.Sobel(img, ddepth=cv.CV_32F, dx=0, dy=1, ksize=5)
     return (Ix,Iy)
 
 
