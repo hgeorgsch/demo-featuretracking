@@ -133,7 +133,7 @@ def getMotion(img1, img2, numpts=5, debug=0):
                      [1, 1, 1, 1, 1]])
 
     # Summation over the window
-    convolutionmode = "same"
+    convolutionmode = "full"
     ixs = signal.convolve2d(ixix, sumf, mode=convolutionmode, boundary='symm')  
     ixys = signal.convolve2d(ixiy, sumf, mode=convolutionmode, boundary='symm')  
     iys = signal.convolve2d(iyiy, sumf, mode=convolutionmode, boundary='symm')  
@@ -144,10 +144,14 @@ def getMotion(img1, img2, numpts=5, debug=0):
     cornerlist = getHarris(img2,debug=debug)
 
     # Step 4.  Motion for each corner
-    # Iterate over corners
-    # TODO: This is only one pixel per corner, filter around corners?
     motionlist = []
+    (Nx,Ny) = img2.shape
+
+    # Iterate over corners
     for ((i,j),s) in cornerlist:
+        # We do not track corners close to the edges
+        if i < 2 or i > Nx-3: continue
+        if j < 2 or j > Ny-3: continue
         if debug > 2:
             print( (i,j), s, ". ixs shape ", ixs.shape, ". Image shape ", img2.shape )
         a = ixs[i][j]
@@ -165,12 +169,15 @@ def drawMotion(img,pt,u,scale=2):
     """Draw a motion vector u from a given point pt."""
     (x,y) = pt
     u = u.flatten()
-    (x1,y1) = (x+scale*u[0],y+scale*u[1])
+    (x1,y1) = (x+int(np.round(scale*u[0])),y+int(np.round(scale*u[1])))
     return cv.arrowedLine(img, pt, (x1,y1), (255,0,0), 1)
 
-def drawMotionList(img,motionlist):
+def drawMotionList(img,motionlist,scale=5):
     """Draw motion vectors as returned from getMotion()."""
     image = img
     for (pt,s,u) in motionlist: 
-        image = drawMotion(image,pt,u)
+        (y,x) = pt
+        pos = (x,y)
+        cv.circle(img,pos,1,(0,0,255),-1)
+        image = drawMotion(image,pos,u,scale=scale)
     return image
