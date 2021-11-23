@@ -159,7 +159,7 @@ def getMotion(img1, img2, numpts=5, debug=0):
         u = - np.linalg.inv(Gmatrix) @ bvector
         motionlist.extend( [ ((i,j),s,u) ] )
         if debug > 2: print ( "Motion ", u.flatten() )
-     return motionlist
+    return motionlist
 
 def drawMotion(img,pt,u,scale=2):
     """Draw a motion vector u from a given point pt."""
