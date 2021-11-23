@@ -1,7 +1,19 @@
 #! /usr/bin/env python
 """Demo of a feature tracker.
 
-NB: Untested, unfinished!"""
+The second frame is saved with annotations
+showing feature points in red, feature points
+from the previous frame in yellow, and estimated
+motion vectors in blue.
+
+Note that the motion calculation is not good.
+Multi-scale tracking is probably required to
+give meaningful results.
+
+The test images show a lot of weak feature points
+which do not match between images, with many random
+motion vectors.
+"""
 
 import cv2 as cv
 from tracking import *
