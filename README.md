@@ -4,6 +4,8 @@ This projects is intended to demonstrate
 corner detectection and tracking by means
 of signal differentiation.
 
+The implementation is in Python and OpenCV.
+
 There are two demo scripts in the src/ directory.
 
 + `detector.py` runs the Harris Corner Detector
