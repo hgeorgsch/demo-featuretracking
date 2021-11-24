@@ -23,3 +23,9 @@ The latter does not work.  The main reason for
 this is probably that multi-scale tracking is 
 not applied.  This should be added for a useful
 test.
+
+## Recommended improvements
+
+1.  Implement Multi-Scale tracking.
+2.  Increase resolution of the image to make the
+    annotations more legible.
